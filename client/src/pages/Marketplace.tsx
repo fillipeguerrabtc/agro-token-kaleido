@@ -96,10 +96,10 @@ export default function Marketplace() {
   });
 
   const filteredListings = listings?.filter(listing => {
-    const matchesType = filterType === 'all' || listing.agroToken?.assetType === filterType;
+    const matchesType = filterType === 'all' || listing.assetType === filterType;
     const matchesSearch = !searchQuery || 
-      listing.agroToken?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.agroToken?.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      listing.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      listing.description?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesType && matchesSearch && listing.status === 'active';
   });
 
@@ -195,10 +195,10 @@ export default function Marketplace() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">{listing.agroToken?.name}</CardTitle>
+                        <CardTitle className="text-base truncate">{listing.name}</CardTitle>
                         <CardDescription className="text-xs mt-1">
                           <Badge variant="outline" className="text-[10px]">
-                            {listing.agroToken?.assetType}
+                            {listing.assetType}
                           </Badge>
                         </CardDescription>
                       </div>
@@ -321,10 +321,10 @@ export default function Marketplace() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{listing.agroToken?.name}</CardTitle>
+                      <CardTitle className="text-lg">{listing.name}</CardTitle>
                       <CardDescription className="mt-2">
                         <Badge variant="outline" className="text-xs">
-                          {listing.agroToken?.assetType}
+                          {listing.assetType}
                         </Badge>
                       </CardDescription>
                     </div>
@@ -333,7 +333,7 @@ export default function Marketplace() {
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Asset Value</span>
-                    <span className="font-medium">R$ {listing.agroToken?.value}</span>
+                    <span className="font-medium">R$ {listing.value}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">List Price</span>
@@ -345,12 +345,12 @@ export default function Marketplace() {
                       Maturity
                     </span>
                     <span className="font-medium">
-                      {listing.agroToken?.maturityDate && format(new Date(listing.agroToken.maturityDate), 'MMM dd, yyyy')}
+                      {listing.maturityDate && format(new Date(listing.maturityDate), 'MMM dd, yyyy')}
                     </span>
                   </div>
-                  {listing.agroToken?.description && (
+                  {listing.description && (
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-2">
-                      {listing.agroToken.description}
+                      {listing.description}
                     </p>
                   )}
                 </CardContent>

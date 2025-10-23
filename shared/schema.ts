@@ -208,6 +208,9 @@ export const insertMarketplaceListingSchema = createInsertSchema(marketplaceList
 export type InsertMarketplaceListing = z.infer<typeof insertMarketplaceListingSchema>;
 export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
 
+// Extended marketplace listing with agro token data (for API responses)
+export type MarketplaceListingWithToken = MarketplaceListing & AgroToken;
+
 // Marketplace Orders - buy/sell orders
 export const marketplaceOrders = pgTable("marketplace_orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
