@@ -17,7 +17,7 @@ export function WalletButton() {
   const { t } = useTranslation();
   const [showImportDialog, setShowImportDialog] = useState(false);
 
-  if (!wallet) {
+  if (!wallet || !wallet.address) {
     return (
       <>
         <Button onClick={() => setShowImportDialog(true)} data-testid="button-import-wallet">

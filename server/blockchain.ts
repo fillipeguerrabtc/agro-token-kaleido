@@ -9,9 +9,22 @@ if (!ENCRYPTION_KEY) {
   throw new Error('SESSION_SECRET environment variable is required for secure key encryption');
 }
 
+// Validate and extract Alchemy API key
+const rawAlchemyKey = process.env.ALCHEMY_API_KEY || '';
+let alchemyApiKey = rawAlchemyKey;
+
+// If the key already contains a URL, extract just the key portion
+if (rawAlchemyKey.includes('https://') || rawAlchemyKey.includes('http://')) {
+  const urlMatch = rawAlchemyKey.match(/\/v2\/([^\/\s]+)/);
+  if (urlMatch) {
+    alchemyApiKey = urlMatch[1];
+    console.log('[Blockchain] Extracted API key from URL format');
+  }
+}
+
 // Initialize Alchemy
 const alchemyConfig = {
-  apiKey: process.env.ALCHEMY_API_KEY,
+  apiKey: alchemyApiKey,
   network: Network.ETH_SEPOLIA,
 };
 
@@ -19,7 +32,7 @@ export const alchemy = new Alchemy(alchemyConfig);
 
 // Sepolia RPC provider
 export const provider = new ethers.JsonRpcProvider(
-  `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`
+  `https://eth-sepolia.g.alchemy.com/v2/${alchemyApiKey}`
 );
 
 // Encryption utilities for private keys

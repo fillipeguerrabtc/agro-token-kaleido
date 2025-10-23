@@ -59,6 +59,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Wallet endpoints
+  app.get("/api/wallets", async (req, res) => {
+    try {
+      const wallets = await storage.getAllWallets();
+      res.json(wallets);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/wallet/import", async (req, res) => {
     try {
       const { name, privateKey } = req.body;
