@@ -12,13 +12,13 @@
   "categories": ["finance", "business", "blockchain"],
   "icons": [
     {
-      "src": "/pwa-icon-192.png",
+      "src": "/kaleido-logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/pwa-icon-512.png",
+      "src": "/kaleido-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -48,14 +48,14 @@
       "short_name": "Payment",
       "description": "Send international payment",
       "url": "/crossborder",
-      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/kaleido-logo.png", "sizes": "192x192" }]
     },
     {
       "name": "Marketplace",
       "short_name": "Market",
       "description": "Browse AgroToken marketplace",
       "url": "/marketplace",
-      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/kaleido-logo.png", "sizes": "192x192" }]
     }
   ]
 }

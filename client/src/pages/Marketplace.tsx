@@ -40,6 +40,17 @@ interface MarketplaceListing {
   price: string;
   status: string;
   listedAt: string;
+  soldAt: string | null;
+  txHash: string | null;
+  // Fields from merged AgroToken
+  name: string;
+  assetType: string;
+  value: string;
+  maturityDate: string;
+  description: string;
+  metadata: any;
+  ownerAddress: string;
+  createdAt: string;
   agroToken?: {
     name: string;
     assetType: string;
