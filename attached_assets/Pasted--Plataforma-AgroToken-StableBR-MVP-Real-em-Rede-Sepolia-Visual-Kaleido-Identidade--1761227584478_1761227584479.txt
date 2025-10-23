@@ -1,0 +1,57 @@
+=== Plataforma “AgroToken-StableBR” – MVP Real em Rede Sepolia (Visual Kaleido) ===
+
+**Identidade Visual e Experiência**
+Toda a interface segue o estilo visual da Kaleido — fundo branco com gradientes em azul e roxo (#1F55FF → #A657FF), tipografia moderna (Sans Serif leve), ícones lineares, e o logotipo da Kaleido no cabeçalho com co-brand “powered by Kaleido”.
+O layout reflete a UX clean e corporativa do site kaleido.io: blocos minimalistas, dashboards modulares, animações sutis e visualização de dados on-chain inspirada no Kaleido Token Explorer.
+Siga a identidade visual do site da Kaleido: https://www.kaleido.io
+
+**Objetivo**
+Lançar uma plataforma funcional para o mercado brasileiro com:
+1. **Tokenização real de ativos do agronegócio** (recebíveis, contratos de safra, CPRs, cotas de FIDC agrícola);
+2. **Emissão e governança de stablecoins** lastreadas em BRL, com liquidação em ambiente seguro;
+3. **Integração mockada** com os serviços da Kaleido (Digital Asset Platform, FireFly Middleware, PrivateStack) para demonstrar conectividade corporativa;
+4. **Execução real on-chain** na rede pública de testes **Sepolia**, onde os tokens e stablecoins são de fato criados e movimentados.
+
+**Arquitetura e Fluxo**
+- **Camada Blockchain (real)**:  
+  - A rede **Sepolia** é usada para o registro real dos contratos inteligentes.  
+  - Smart contracts ERC-20 (stablecoin) e ERC-721/ERC-1155 (AgroTokens) são implantados e geram transações visíveis no explorer.  
+  - Todos os saldos, extratos e transações exibidos na plataforma são sincronizados diretamente da blockchain via API (ethers.js ou web3).  
+
+- **Camada Kaleido (mockada)**:  
+  - Simula integração com **Digital Asset Platform** (custódia e lifecycle), **FireFly** (governança e orquestração), e **PrivateStack** (rede híbrida).  
+  - Mock endpoints retornam dados de políticas, whitelists e governança de tokens, como se fossem serviços Kaleido.  
+
+- **Camada de Aplicação (UI/UX)**:  
+  - Dashboard “Originador Agro”: cadastra ativo, define parâmetros (valor, vencimento, lastro) e emite AgroTokens reais na Sepolia.  
+  - Dashboard “Investidor”: exibe portfólio, saldo de stablecoin, histórico de transações on-chain, extrato e detalhes de tokenização.  
+  - Módulo “Stablecoin”: permite emissão/redemption da stablecoin “BRLx” (token real em Sepolia).  
+  - Painel de Governança: mostra fluxos simulados do FireFly e regras de compliance (mocado).  
+
+- **Liquidação (mockada/on-chain híbrida)**:  
+  - Transações de compra/venda de AgroTokens são registradas em Sepolia.  
+  - A liquidação em “BRLx” é executada on-chain (transferências reais), enquanto a simulação de reconciliação bancária/fiat é mocada.  
+
+**Funcionalidades Principais**
+- Emissão real de tokens (AgroToken e BRLx) em Sepolia com interface visual inspirada no Kaleido Token Explorer.  
+- Consulta de extrato e saldo sincronizados on-chain (etherscan API).  
+- Simulação de governança Kaleido: whitelists, permissões, fluxos de aprovação.  
+- Dashboard com UX empresarial e cores oficiais Kaleido.  
+Macro pontos:
+1. Deploy de smart contracts na Sepolia + setup mock de APIs Kaleido.  
+2. Criação de portal do originador e emissão real de AgroTokens.  
+3. Implementação da stablecoin BRLx (ERC-20) + wallet integrada.  
+4. Sincronização de dados on-chain (saldo, extrato, histórico).  
+5. Integração mockada de FireFly + painel de governança.  
+6. Demo funcional completa: tokenização → compra com BRLx → extrato on-chain.  
+
+**Diferenciais**
+- Tokenização e stablecoin **reais em Sepolia**, provando domínio técnico e integração Web3.  
+- Visual e UX no padrão **Kaleido Enterprise**.  
+- Mock inteligente das APIs Kaleido, simulando orquestração, compliance e relatórios corporativos.  
+- Base pronta para migração futura à Kaleido real em ambiente enterprise.  
+
+**Pitch Resumido**
+> “O AgroToken-StableBR é uma plataforma brasileira que usa a identidade visual e arquitetura da Kaleido, com tokenização real de ativos agro e stablecoin em Sepolia. Todos os saldos e extratos refletem transações on-chain reais, enquanto as integrações corporativas com Kaleido são simuladas. É um MVP funcional, seguro e pronto para demonstração a bancos, fintechs e originadores agrícolas.”  
+
+========================
