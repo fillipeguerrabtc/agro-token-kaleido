@@ -145,6 +145,8 @@ export const AGROTOKEN_ABI = [
   'function getAssetData(uint256 tokenId) external view returns (tuple(string assetType, uint256 value, uint256 maturityDate, string metadata))',
   'function ownerOf(uint256 tokenId) external view returns (address)',
   'function totalSupply() external view returns (uint256)',
+  'function transferFrom(address from, address to, uint256 tokenId) external',
+  'function approve(address to, uint256 tokenId) external',
 ];
 
 // Real blockchain functions (will use actual contracts when deployed)
@@ -273,6 +275,28 @@ export async function createAgroToken(
   } catch (error) {
     console.error('Error creating AgroToken:', error);
     throw new Error('Failed to create AgroToken on blockchain');
+  }
+}
+
+export async function transferAgroToken(
+  tokenId: string,
+  fromAddress: string,
+  toAddress: string,
+  wallet: ethers.Wallet
+): Promise<string> {
+  if (!USE_REAL_BLOCKCHAIN) {
+    console.log('[MOCK] Transferring AgroToken:', tokenId, 'from', fromAddress, 'to', toAddress);
+    return '0x' + crypto.randomBytes(32).toString('hex');
+  }
+  
+  try {
+    const contract = new ethers.Contract(CONTRACTS.AGROTOKEN_NFT, AGROTOKEN_ABI, wallet);
+    const tx = await contract.transferFrom(fromAddress, toAddress, tokenId);
+    await tx.wait();
+    return tx.hash;
+  } catch (error) {
+    console.error('Error transferring AgroToken:', error);
+    throw new Error('Failed to transfer AgroToken NFT on blockchain');
   }
 }
 

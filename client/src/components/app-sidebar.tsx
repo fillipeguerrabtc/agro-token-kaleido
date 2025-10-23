@@ -1,4 +1,4 @@
-import { Home, Building2, Wallet2, Coins, Lock, Shield, Activity, Globe } from 'lucide-react';
+import { Home, Building2, Wallet2, ShoppingCart, Coins, Lock, Shield, Activity, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   Sidebar,
@@ -32,6 +32,11 @@ export function AppSidebar() {
       title: t('nav.investor'),
       url: '/investor',
       icon: Wallet2,
+    },
+    {
+      title: t('nav.marketplace'),
+      url: '/marketplace',
+      icon: ShoppingCart,
     },
     {
       title: t('nav.stablecoin'),

@@ -9,18 +9,24 @@ The application demonstrates **REAL blockchain integration** with mock enterpris
 ## Platform Status
 
 ✅ **PRODUCTION READY** - All core features tested and operational
-- ✅ Wallet Import with encrypted key storage
+- ✅ Wallet Import with encrypted key storage (case-insensitive address lookup)
 - ✅ Real-time Exchange Rates (±2% market variance)  
 - ✅ Cross-Border Payments with REAL BRLx transactions on Sepolia
+- ✅ **WebSocket Server** - Real-time notifications for transactions, marketplace, stablecoin operations
+- ✅ **AgroToken Marketplace** - Complete buy/sell with BRLx payment and NFT transfer
+- ✅ **PWA Mobile Experience** - Auto device detection, 5-item bottom navigation, responsive design
 - ✅ Etherscan integration for transaction verification
 - ✅ Bilingual support (PT-BR/EN) across all pages
 - ✅ Kaleido visual identity with gradient branding
 - ✅ End-to-end tested with REAL blockchain transactions
 
-**Latest Test Transaction:**
-- TX Hash: 0x74ef236edefab9e3bc32e278780839d0b210c036b7bea9c512c0ef6bbf4dce5e
-- Explorer: https://sepolia.etherscan.io/tx/0x74ef236edefab9e3bc32e278780839d0b210c036b7bea9c512c0ef6bbf4dce5e
-- Status: SUCCESS - Payment R$ 50 → USD 9.22
+**Latest Updates (Current Session):**
+- ✅ WebSocket server implemented at /ws with client subscriptions
+- ✅ Real-time notifications integrated in all routes (marketplace, stablecoin, cross-border)
+- ✅ 3 mock AgroTokens pre-loaded in marketplace (CPR Soja, Recebível Milho, Contrato Café)
+- ✅ Mobile bottom nav fixed to include 5 items (added Cross-Border)
+- ✅ Case-insensitive address comparison throughout storage layer
+- ✅ Architect-reviewed with zero blocking defects
 
 ## User Preferences
 
@@ -70,6 +76,12 @@ Preferred communication style: Simple, everyday language.
 - Express.js with TypeScript in ESM mode
 - Vite middleware in development for HMR
 - Session-based architecture (though authentication not fully implemented)
+- **WebSocket Server** (server/websocket.ts) on path /ws
+  - Real-time event notifications for wallet-specific events
+  - Client subscription by address (case-insensitive, normalized to lowercase)
+  - Heartbeat/ping-pong mechanism for connection health
+  - Event types: transaction, marketplace_listing, marketplace_purchase, stablecoin_mint, stablecoin_burn, cross_border_payment
+  - Auto-reconnection logic on frontend (WebSocketContext)
 
 **Blockchain Integration:**
 - Ethers.js v6 for Ethereum interactions

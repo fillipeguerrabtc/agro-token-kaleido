@@ -1,4 +1,4 @@
-import { Home, FileText, Wallet, TrendingUp, Menu } from 'lucide-react';
+import { Home, FileText, Wallet, TrendingUp, Globe } from 'lucide-react';
 import { useLocation, Link } from 'wouter';
 import { cn } from '@/lib/utils';
 import { useDevice } from '@/contexts/DeviceContext';
@@ -15,6 +15,7 @@ export function MobileBottomNav() {
     { path: '/', icon: Home, label: t('nav.home') },
     { path: '/marketplace', icon: TrendingUp, label: t('nav.marketplace') },
     { path: '/stablecoin', icon: Wallet, label: 'BRLx' },
+    { path: '/crossborder', icon: Globe, label: t('nav.crossBorder') },
     { path: '/transactions', icon: FileText, label: t('nav.transactions') },
   ];
 

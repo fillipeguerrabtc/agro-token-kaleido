@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { wsServer } from "./index";
 import {
   provider,
   getEthBalance,
@@ -14,6 +15,7 @@ import {
   burnBRLx,
   transferBRLx,
   createAgroToken,
+  transferAgroToken,
   syncTransactionsFromBlockchain,
   CONTRACTS,
 } from "./blockchain";
@@ -262,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.createTransaction({
         txHash,
-        fromAddress: MOCK_CONTRACTS.BRLX_TOKEN,
+        fromAddress: CONTRACTS.BRLX_TOKEN,
         toAddress: address,
         type: 'stablecoin_mint',
         value: amount,
@@ -272,6 +274,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gasUsed: null,
         metadata: { operation: 'mint' },
       });
+
+      // Notify WebSocket clients
+      if (wsServer) {
+        wsServer.notifyStablecoinMint(address, amount, txHash);
+      }
 
       res.json(tx);
     } catch (error: any) {
@@ -311,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createTransaction({
         txHash,
         fromAddress: address,
-        toAddress: MOCK_CONTRACTS.BRLX_TOKEN,
+        toAddress: CONTRACTS.BRLX_TOKEN,
         type: 'stablecoin_burn',
         value: amount,
         blockNumber: null,
@@ -320,6 +327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         gasUsed: null,
         metadata: { operation: 'burn' },
       });
+
+      // Notify WebSocket clients
+      if (wsServer) {
+        wsServer.notifyStablecoinBurn(address, amount, txHash);
+      }
 
       res.json(tx);
     } catch (error: any) {
@@ -589,9 +601,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
 
+      // Notify WebSocket clients
+      if (wsServer) {
+        wsServer.notifyCrossBorderPayment(fromAddress, payment);
+      }
+
       // Simulate async completion (in production, this would be a webhook from partner)
       setTimeout(async () => {
         await storage.updateCrossBorderPaymentStatus(payment.id, 'completed');
+        if (wsServer) {
+          wsServer.notifyCrossBorderPayment(fromAddress, {
+            ...payment,
+            status: 'completed',
+          });
+        }
       }, 5000);
 
       // Record transaction
@@ -616,6 +639,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(payment);
     } catch (error: any) {
       console.error('Cross-border payment error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Marketplace endpoints
+  app.get("/api/marketplace/listings", async (req, res) => {
+    try {
+      const listings = await storage.getActiveMarketplaceListings();
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/marketplace/mylistings", async (req, res) => {
+    try {
+      const { address } = req.query;
+      if (!address) {
+        return res.status(400).json({ error: "Address required" });
+      }
+      const listings = await storage.getMarketplaceListingsBySeller(address as string);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/marketplace/buy/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { buyerAddress } = req.body;
+
+      if (!buyerAddress) {
+        return res.status(400).json({ error: "Buyer address required" });
+      }
+
+      const listing = await storage.getMarketplaceListingById(id);
+      if (!listing || listing.status !== 'active') {
+        return res.status(404).json({ error: "Listing not found or not active" });
+      }
+
+      const buyerWallet = await storage.getWalletByAddress(buyerAddress);
+      if (!buyerWallet) {
+        return res.status(404).json({ error: "Buyer wallet not found" });
+      }
+
+      const sellerWallet = await storage.getWalletByAddress(listing.sellerAddress);
+      if (!sellerWallet) {
+        return res.status(404).json({ error: "Seller wallet not found" });
+      }
+
+      const buyerWalletInstance = getWalletFromPrivateKey(
+        decryptPrivateKey(buyerWallet.encryptedPrivateKey)
+      );
+
+      const paymentTxHash = await transferBRLx(
+        listing.price,
+        listing.sellerAddress,
+        buyerWalletInstance
+      );
+
+      const sellerWalletInstance = getWalletFromPrivateKey(
+        decryptPrivateKey(sellerWallet.encryptedPrivateKey)
+      );
+
+      const transferTxHash = await transferAgroToken(
+        listing.tokenId,
+        listing.sellerAddress,
+        buyerAddress,
+        sellerWalletInstance
+      );
+
+      const order = await storage.createMarketplaceOrder({
+        listingId: listing.id,
+        buyerAddress,
+        sellerAddress: listing.sellerAddress,
+        tokenId: listing.tokenId,
+        price: listing.price,
+        status: 'completed',
+        paymentTxHash,
+        transferTxHash,
+        completedAt: new Date(),
+        metadata: { contractAddress: listing.contractAddress },
+      });
+
+      await storage.updateMarketplaceListingStatus(listing.id, 'sold', transferTxHash);
+      await storage.updateAgroTokenOwner(listing.agroTokenId, buyerAddress);
+
+      // Notify WebSocket clients
+      if (wsServer) {
+        wsServer.notifyMarketplacePurchase({
+          ...order,
+          listing,
+        });
+        wsServer.notifyTransaction(buyerAddress, {
+          type: 'marketplace_purchase',
+          txHash: paymentTxHash,
+          amount: listing.price,
+        });
+        wsServer.notifyTransaction(listing.sellerAddress, {
+          type: 'marketplace_sale',
+          txHash: paymentTxHash,
+          amount: listing.price,
+        });
+      }
+
+      res.json(order);
+    } catch (error: any) {
+      console.error('Marketplace buy error:', error);
       res.status(500).json({ error: error.message });
     }
   });

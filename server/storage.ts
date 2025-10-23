@@ -7,12 +7,15 @@ import {
   type CustodyWallet, type InsertCustodyWallet,
   type CustodyApproval, type InsertCustodyApproval,
   type CrossBorderPayment, type InsertCrossBorderPayment,
+  type MarketplaceListing, type InsertMarketplaceListing,
+  type MarketplaceOrder, type InsertMarketplaceOrder,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
   // Wallet operations
   getWallet(address: string): Promise<Wallet | undefined>;
+  getWalletByAddress(address: string): Promise<Wallet | undefined>;
   createWallet(wallet: InsertWallet): Promise<Wallet>;
   getAllWallets(): Promise<Wallet[]>;
   
@@ -21,6 +24,7 @@ export interface IStorage {
   getAgroTokensByOwner(ownerAddress: string): Promise<AgroToken[]>;
   createAgroToken(token: InsertAgroToken): Promise<AgroToken>;
   getAllAgroTokens(): Promise<AgroToken[]>;
+  updateAgroTokenOwner(id: string, newOwner: string): Promise<AgroToken | undefined>;
   
   // Stablecoin operations
   createStablecoinTransaction(tx: InsertStablecoinTransaction): Promise<StablecoinTransaction>;
@@ -53,6 +57,14 @@ export interface IStorage {
   getCrossBorderPaymentsByAddress(address: string): Promise<CrossBorderPayment[]>;
   getAllCrossBorderPayments(): Promise<CrossBorderPayment[]>;
   updateCrossBorderPaymentStatus(id: string, status: string, txHash?: string, partnerTxId?: string): Promise<CrossBorderPayment | undefined>;
+  
+  // Marketplace operations
+  getActiveMarketplaceListings(): Promise<any[]>;
+  getMarketplaceListingsBySeller(sellerAddress: string): Promise<MarketplaceListing[]>;
+  getMarketplaceListingById(id: string): Promise<MarketplaceListing | undefined>;
+  createMarketplaceListing(listing: InsertMarketplaceListing): Promise<MarketplaceListing>;
+  updateMarketplaceListingStatus(id: string, status: string, txHash?: string): Promise<MarketplaceListing | undefined>;
+  createMarketplaceOrder(order: InsertMarketplaceOrder): Promise<MarketplaceOrder>;
 }
 
 export class MemStorage implements IStorage {
@@ -64,6 +76,8 @@ export class MemStorage implements IStorage {
   private custodyWallets: Map<string, CustodyWallet>;
   private custodyApprovals: Map<string, CustodyApproval>;
   private crossBorderPayments: Map<string, CrossBorderPayment>;
+  private marketplaceListings: Map<string, MarketplaceListing>;
+  private marketplaceOrders: Map<string, MarketplaceOrder>;
 
   constructor() {
     this.wallets = new Map();
@@ -74,6 +88,8 @@ export class MemStorage implements IStorage {
     this.custodyWallets = new Map();
     this.custodyApprovals = new Map();
     this.crossBorderPayments = new Map();
+    this.marketplaceListings = new Map();
+    this.marketplaceOrders = new Map();
     
     // Initialize with mock data
     this.initializeMockData();
@@ -101,11 +117,85 @@ export class MemStorage implements IStorage {
     ];
     
     mockWhitelists.forEach(w => this.whitelists.set(w.id, w as GovernanceWhitelist));
+
+    // Mock AgroTokens for marketplace
+    const mockOwnerAddress = '0x742d35Cc6634C0532925a3b844Bc9e7595f0c3a8';
+    const maturityDate1 = new Date();
+    maturityDate1.setMonth(maturityDate1.getMonth() + 6);
+    const maturityDate2 = new Date();
+    maturityDate2.setMonth(maturityDate2.getMonth() + 9);
+    const maturityDate3 = new Date();
+    maturityDate3.setMonth(maturityDate3.getMonth() + 12);
+
+    const mockAgroTokens = [
+      {
+        id: randomUUID(),
+        name: 'CPR Soja 2025',
+        tokenId: '1001',
+        contractAddress: '0xAgroToken123',
+        assetType: 'CPR',
+        value: '250000',
+        maturityDate: maturityDate1,
+        description: 'Cédula de Produto Rural - 5000 sacas de soja',
+        metadata: { tons: '300', variety: 'transgênica', region: 'MT' },
+        ownerAddress: mockOwnerAddress,
+        txHash: '0xabc123',
+        createdAt: new Date(),
+      },
+      {
+        id: randomUUID(),
+        name: 'Recebível Milho Premium',
+        tokenId: '1002',
+        contractAddress: '0xAgroToken123',
+        assetType: 'Receivable',
+        value: '180000',
+        maturityDate: maturityDate2,
+        description: 'Recebível garantido por safra de milho',
+        metadata: { tons: '180', variety: 'híbrido', region: 'GO' },
+        ownerAddress: mockOwnerAddress,
+        txHash: '0xdef456',
+        createdAt: new Date(),
+      },
+      {
+        id: randomUUID(),
+        name: 'Contrato Café Arábica',
+        tokenId: '1003',
+        contractAddress: '0xAgroToken123',
+        assetType: 'HarvestContract',
+        value: '420000',
+        maturityDate: maturityDate3,
+        description: 'Contrato de safra de café arábica especial',
+        metadata: { tons: '50', variety: 'arábica especial', region: 'MG' },
+        ownerAddress: mockOwnerAddress,
+        txHash: '0xghi789',
+        createdAt: new Date(),
+      },
+    ];
+
+    mockAgroTokens.forEach(t => {
+      this.agroTokens.set(t.id, t as AgroToken);
+      
+      // Create marketplace listing for each token
+      const listingId = randomUUID();
+      const listing: MarketplaceListing = {
+        id: listingId,
+        agroTokenId: t.id,
+        tokenId: t.tokenId,
+        contractAddress: t.contractAddress,
+        sellerAddress: t.ownerAddress,
+        price: (parseFloat(t.value) * 0.95).toFixed(2), // 5% discount
+        status: 'active',
+        txHash: null,
+        listedAt: new Date(),
+        soldAt: null,
+      };
+      this.marketplaceListings.set(listingId, listing);
+    });
   }
 
   // Wallet operations
   async getWallet(address: string): Promise<Wallet | undefined> {
-    return Array.from(this.wallets.values()).find(w => w.address === address);
+    return Array.from(this.wallets.values()).find(w => w.address.toLowerCase() === address.toLowerCase());
   }
 
   async createWallet(insertWallet: InsertWallet): Promise<Wallet> {
@@ -130,7 +220,7 @@ export class MemStorage implements IStorage {
 
   async getAgroTokensByOwner(ownerAddress: string): Promise<AgroToken[]> {
     return Array.from(this.agroTokens.values()).filter(
-      t => t.ownerAddress === ownerAddress
+      t => t.ownerAddress.toLowerCase() === ownerAddress.toLowerCase()
     );
   }
 
@@ -138,6 +228,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const token: AgroToken = {
       ...insertToken,
+      description: insertToken.description ?? null,
+      metadata: insertToken.metadata ?? null,
+      txHash: insertToken.txHash ?? null,
       id,
       createdAt: new Date(),
     };
@@ -154,6 +247,9 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const tx: StablecoinTransaction = {
       ...insertTx,
+      status: insertTx.status ?? 'pending',
+      fromAddress: insertTx.fromAddress ?? null,
+      toAddress: insertTx.toAddress ?? null,
       id,
       createdAt: new Date(),
       confirmedAt: insertTx.status === 'confirmed' ? new Date() : null,
@@ -183,6 +279,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const entry: GovernanceWhitelist = {
       ...insertEntry,
+      status: insertEntry.status ?? 'active',
       id,
       addedAt: new Date(),
       updatedAt: new Date(),
@@ -196,6 +293,13 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const tx: TransactionHistory = {
       ...insertTx,
+      fromAddress: insertTx.fromAddress ?? null,
+      toAddress: insertTx.toAddress ?? null,
+      value: insertTx.value ?? null,
+      blockNumber: insertTx.blockNumber ?? null,
+      status: insertTx.status ?? 'pending',
+      gasUsed: insertTx.gasUsed ?? null,
+      metadata: insertTx.metadata ?? null,
       id,
     };
     this.transactions.set(id, tx);
@@ -225,6 +329,8 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const wallet: CustodyWallet = {
       ...insertWallet,
+      status: insertWallet.status ?? 'active',
+      balance: insertWallet.balance ?? '0',
       id,
       createdAt: new Date(),
       lastOperation: null,
@@ -250,6 +356,14 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const approval: CustodyApproval = {
       ...insertApproval,
+      status: insertApproval.status ?? 'pending',
+      walletId: insertApproval.walletId ?? null,
+      amount: insertApproval.amount ?? null,
+      destination: insertApproval.destination ?? null,
+      requiredApprovals: insertApproval.requiredApprovals ?? 3,
+      currentApprovals: insertApproval.currentApprovals ?? 0,
+      approvers: insertApproval.approvers ?? null,
+      metadata: insertApproval.metadata ?? null,
       id,
       createdAt: new Date(),
       completedAt: null,
@@ -278,6 +392,14 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const payment: CrossBorderPayment = {
       ...insertPayment,
+      toAddress: insertPayment.toAddress ?? null,
+      amountReceived: insertPayment.amountReceived ?? null,
+      status: insertPayment.status ?? 'pending',
+      brlxTxHash: insertPayment.brlxTxHash ?? null,
+      partnerTxId: insertPayment.partnerTxId ?? null,
+      complianceChecked: insertPayment.complianceChecked ?? null,
+      complianceStatus: insertPayment.complianceStatus ?? 'pending',
+      metadata: insertPayment.metadata ?? null,
       id,
       createdAt: new Date(),
       completedAt: null,
@@ -314,6 +436,88 @@ export class MemStorage implements IStorage {
     };
     this.crossBorderPayments.set(id, updated);
     return updated;
+  }
+
+  async getWalletByAddress(address: string): Promise<Wallet | undefined> {
+    return Array.from(this.wallets.values()).find(w => w.address.toLowerCase() === address.toLowerCase());
+  }
+
+  async updateAgroTokenOwner(id: string, newOwner: string): Promise<AgroToken | undefined> {
+    const token = this.agroTokens.get(id);
+    if (!token) return undefined;
+    const updated: AgroToken = { ...token, ownerAddress: newOwner };
+    this.agroTokens.set(id, updated);
+    return updated;
+  }
+
+  async getActiveMarketplaceListings(): Promise<any[]> {
+    const listings = Array.from(this.marketplaceListings.values())
+      .filter(l => l.status === 'active');
+    
+    const enriched = await Promise.all(
+      listings.map(async (listing) => {
+        const agroToken = await this.getAgroToken(listing.agroTokenId);
+        return {
+          ...listing,
+          agroToken,
+        };
+      })
+    );
+    
+    return enriched;
+  }
+
+  async getMarketplaceListingsBySeller(sellerAddress: string): Promise<MarketplaceListing[]> {
+    return Array.from(this.marketplaceListings.values())
+      .filter(l => l.sellerAddress === sellerAddress);
+  }
+
+  async getMarketplaceListingById(id: string): Promise<MarketplaceListing | undefined> {
+    return this.marketplaceListings.get(id);
+  }
+
+  async createMarketplaceListing(listing: InsertMarketplaceListing): Promise<MarketplaceListing> {
+    const id = randomUUID();
+    const created: MarketplaceListing = {
+      ...listing,
+      status: listing.status ?? 'active',
+      txHash: listing.txHash ?? null,
+      id,
+      listedAt: new Date(),
+      soldAt: null,
+    };
+    this.marketplaceListings.set(id, created);
+    return created;
+  }
+
+  async updateMarketplaceListingStatus(id: string, status: string, txHash?: string): Promise<MarketplaceListing | undefined> {
+    const listing = this.marketplaceListings.get(id);
+    if (!listing) return undefined;
+    
+    const updated: MarketplaceListing = {
+      ...listing,
+      status,
+      txHash: txHash || listing.txHash,
+      soldAt: status === 'sold' ? new Date() : listing.soldAt,
+    };
+    this.marketplaceListings.set(id, updated);
+    return updated;
+  }
+
+  async createMarketplaceOrder(order: InsertMarketplaceOrder): Promise<MarketplaceOrder> {
+    const id = randomUUID();
+    const created: MarketplaceOrder = {
+      ...order,
+      status: order.status ?? 'pending',
+      paymentTxHash: order.paymentTxHash ?? null,
+      transferTxHash: order.transferTxHash ?? null,
+      metadata: order.metadata ?? null,
+      id,
+      createdAt: new Date(),
+      completedAt: order.status === 'completed' ? new Date() : null,
+    };
+    this.marketplaceOrders.set(id, created);
+    return created;
   }
 }
 

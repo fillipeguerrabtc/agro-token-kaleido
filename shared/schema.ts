@@ -185,3 +185,49 @@ export const insertCrossBorderPaymentSchema = createInsertSchema(crossBorderPaym
 
 export type InsertCrossBorderPayment = z.infer<typeof insertCrossBorderPaymentSchema>;
 export type CrossBorderPayment = typeof crossBorderPayments.$inferSelect;
+
+// Marketplace Listings - AgroTokens listed for sale
+export const marketplaceListings = pgTable("marketplace_listings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agroTokenId: text("agro_token_id").notNull(), // Reference to agro_tokens table
+  tokenId: text("token_id").notNull(), // On-chain token ID
+  contractAddress: text("contract_address").notNull(),
+  sellerAddress: text("seller_address").notNull(),
+  price: decimal("price", { precision: 18, scale: 2 }).notNull(), // Price in BRLx
+  status: text("status").notNull().default("active"), // active, sold, cancelled
+  listedAt: timestamp("listed_at").defaultNow().notNull(),
+  soldAt: timestamp("sold_at"),
+  txHash: text("tx_hash"), // Transaction hash if sold
+});
+
+export const insertMarketplaceListingSchema = createInsertSchema(marketplaceListings).omit({
+  id: true,
+  listedAt: true,
+});
+
+export type InsertMarketplaceListing = z.infer<typeof insertMarketplaceListingSchema>;
+export type MarketplaceListing = typeof marketplaceListings.$inferSelect;
+
+// Marketplace Orders - buy/sell orders
+export const marketplaceOrders = pgTable("marketplace_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  listingId: text("listing_id").notNull(),
+  buyerAddress: text("buyer_address").notNull(),
+  sellerAddress: text("seller_address").notNull(),
+  tokenId: text("token_id").notNull(),
+  price: decimal("price", { precision: 18, scale: 2 }).notNull(),
+  status: text("status").notNull().default("pending"), // pending, processing, completed, failed, cancelled
+  paymentTxHash: text("payment_tx_hash"), // BRLx payment transaction
+  transferTxHash: text("transfer_tx_hash"), // NFT transfer transaction
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+  metadata: jsonb("metadata"),
+});
+
+export const insertMarketplaceOrderSchema = createInsertSchema(marketplaceOrders).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMarketplaceOrder = z.infer<typeof insertMarketplaceOrderSchema>;
+export type MarketplaceOrder = typeof marketplaceOrders.$inferSelect;
