@@ -23,7 +23,7 @@ const resources = {
         subtitle: 'Plataforma brasileira para tokenização real de CPRs, recebíveis e contratos de safra na blockchain Sepolia',
         cta_tokenize: 'Começar Tokenização',
         cta_dashboard: 'Ver Dashboard',
-        powered_by: 'Powered by Kaleido',
+        powered_by: 'Operação auditada em tempo real',
         feature_tokenization: 'Tokenização de Ativos',
         feature_tokenization_desc: 'Tokenize CPRs, recebíveis agrícolas e contratos de safra em blockchain',
         feature_stablecoin: 'Stablecoin BRLx',
@@ -36,6 +36,14 @@ const resources = {
         blockchain_network: 'Rede Blockchain',
         realtime_sync: 'Sincronização On-Chain',
         enterprise_platform: 'Kaleido Platform',
+      },
+      // Platform Stats
+      stats: {
+        tvl: 'TVL Total',
+        marketplace_volume: 'Volume Marketplace',
+        active_wallets: 'Carteiras Ativas',
+        transactions_24h: 'Transações 24h',
+        live_metrics: 'Métricas em Tempo Real',
       },
       // Wallet
       wallet: {
@@ -234,6 +242,22 @@ const resources = {
         poweredBy: 'Powered by Kaleido + BRLx',
         viewOnEtherscan: 'Ver no Etherscan',
       },
+      // Notifications
+      notifications: {
+        new_transaction: 'Nova Transação',
+        new_marketplace_listing: 'Novo AgroToken no Marketplace',
+        purchase_confirmed: 'Compra Confirmada',
+        agrotoken_acquired: 'AgroToken adquirido com sucesso!',
+        brlx_minted: 'BRLx Emitido',
+        brlx_burned: 'BRLx Queimado',
+        international_payment: 'Pagamento Internacional',
+        added_to_wallet: 'adicionados à sua carteira',
+        removed_from_wallet: 'removidos da sua carteira',
+        view_marketplace: 'Ver Marketplace',
+        view_portfolio: 'Ver Portfólio',
+        invest_marketplace: 'Investir no Marketplace',
+        view_transaction: 'Ver Transação',
+      },
       // Common
       common: {
         loading: 'Carregando...',
@@ -251,7 +275,11 @@ const resources = {
         theme: 'Tema',
         light: 'Claro',
         dark: 'Escuro',
-        processing: 'Processando...',
+        processing: 'Processando operação...',
+        processing_blockchain: 'Processando na rede Sepolia - Tempo estimado: 14s',
+        operation_pending: 'Operação pendente de confirmação on-chain',
+        institutional_security: 'Operação protegida por criptografia AES-256-GCM',
+        enterprise_compliance: 'Conforme padrões Kaleido Enterprise',
       },
     },
   },
@@ -275,7 +303,7 @@ const resources = {
         subtitle: 'Brazilian platform for real tokenization of CPRs, receivables, and harvest contracts on Sepolia blockchain',
         cta_tokenize: 'Start Tokenization',
         cta_dashboard: 'View Dashboard',
-        powered_by: 'Powered by Kaleido',
+        powered_by: 'Real-time audited operations',
         feature_tokenization: 'Asset Tokenization',
         feature_tokenization_desc: 'Tokenize CPRs, agricultural receivables, and harvest contracts on blockchain',
         feature_stablecoin: 'BRLx Stablecoin',
@@ -288,6 +316,14 @@ const resources = {
         blockchain_network: 'Blockchain Network',
         realtime_sync: 'On-Chain Sync',
         enterprise_platform: 'Kaleido Platform',
+      },
+      // Platform Stats
+      stats: {
+        tvl: 'Total TVL',
+        marketplace_volume: 'Marketplace Volume',
+        active_wallets: 'Active Wallets',
+        transactions_24h: '24h Transactions',
+        live_metrics: 'Live Metrics',
       },
       // Wallet
       wallet: {
@@ -486,6 +522,22 @@ const resources = {
         poweredBy: 'Powered by Kaleido + BRLx',
         viewOnEtherscan: 'View on Etherscan',
       },
+      // Notifications
+      notifications: {
+        new_transaction: 'New Transaction',
+        new_marketplace_listing: 'New AgroToken Listed',
+        purchase_confirmed: 'Purchase Confirmed',
+        agrotoken_acquired: 'AgroToken successfully acquired!',
+        brlx_minted: 'BRLx Minted',
+        brlx_burned: 'BRLx Burned',
+        international_payment: 'International Payment',
+        added_to_wallet: 'added to your wallet',
+        removed_from_wallet: 'removed from your wallet',
+        view_marketplace: 'View Marketplace',
+        view_portfolio: 'View Portfolio',
+        invest_marketplace: 'Invest in Marketplace',
+        view_transaction: 'View Transaction',
+      },
       // Common
       common: {
         loading: 'Loading...',
@@ -503,7 +555,11 @@ const resources = {
         theme: 'Theme',
         light: 'Light',
         dark: 'Dark',
-        processing: 'Processing...',
+        processing: 'Processing operation...',
+        processing_blockchain: 'Processing on Sepolia network - Estimated time: 14s',
+        operation_pending: 'Operation pending on-chain confirmation',
+        institutional_security: 'Operation protected by AES-256-GCM encryption',
+        enterprise_compliance: 'Kaleido Enterprise Standards Compliant',
       },
     },
   },

@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useWallet } from './WalletContext';
+import { useTranslation } from 'react-i18next';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, ExternalLink, Eye } from 'lucide-react';
 
 interface WebSocketEvent {
   type: string;
@@ -23,6 +26,7 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
   const { toast } = useToast();
   const { wallet } = useWallet();
+  const { t } = useTranslation();
 
   const connect = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -63,43 +67,98 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
         switch (message.type) {
           case 'transaction':
             toast({
-              title: 'Nova Transação',
-              description: `Transação recebida: ${message.data.txHash?.slice(0, 10)}...`,
+              title: '✅ ' + t('notifications.new_transaction'),
+              description: `${message.data.txHash?.slice(0, 16)}...`,
+              action: message.data.txHash ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.open(`https://sepolia.etherscan.io/tx/${message.data.txHash}`, '_blank')}
+                  className="gap-1"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Etherscan
+                </Button>
+              ) : undefined,
             });
             break;
 
           case 'marketplace_listing':
             toast({
-              title: 'Novo AgroToken no Marketplace',
-              description: `${message.data.agroToken?.name || 'Token'} listado por R$ ${message.data.price}`,
+              title: '🏪 ' + t('notifications.new_marketplace_listing'),
+              description: `${message.data.agroToken?.name || 'Token'} - R$ ${new Intl.NumberFormat('pt-BR').format(message.data.price)}`,
+              action: (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.location.href = '/marketplace'}
+                  className="gap-1"
+                >
+                  <Eye className="h-3 w-3" />
+                  {t('notifications.view_marketplace')}
+                </Button>
+              ),
             });
             break;
 
           case 'marketplace_purchase':
             toast({
-              title: 'Compra Confirmada',
-              description: `AgroToken adquirido com sucesso!`,
+              title: '🎉 ' + t('notifications.purchase_confirmed'),
+              description: t('notifications.agrotoken_acquired'),
+              action: (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.location.href = '/investor'}
+                  className="gap-1"
+                >
+                  <ArrowRight className="h-3 w-3" />
+                  {t('notifications.view_portfolio')}
+                </Button>
+              ),
             });
             break;
 
           case 'stablecoin_mint':
             toast({
-              title: 'BRLx Mintado',
-              description: `R$ ${message.data.amount} BRLx adicionados à sua carteira`,
+              title: '💰 ' + t('notifications.brlx_minted'),
+              description: `R$ ${new Intl.NumberFormat('pt-BR').format(message.data.amount)} BRLx ${t('notifications.added_to_wallet')}`,
+              action: (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.location.href = '/marketplace'}
+                  className="gap-1"
+                >
+                  <ArrowRight className="h-3 w-3" />
+                  {t('notifications.invest_marketplace')}
+                </Button>
+              ),
             });
             break;
 
           case 'stablecoin_burn':
             toast({
-              title: 'BRLx Queimado',
-              description: `R$ ${message.data.amount} BRLx removidos da sua carteira`,
+              title: '🔥 ' + t('notifications.brlx_burned'),
+              description: `R$ ${new Intl.NumberFormat('pt-BR').format(message.data.amount)} BRLx ${t('notifications.removed_from_wallet')}`,
             });
             break;
 
           case 'cross_border_payment':
             toast({
-              title: 'Pagamento Internacional',
-              description: `Pagamento de R$ ${message.data.amountBRL} processado`,
+              title: '🌍 ' + t('notifications.international_payment'),
+              description: `R$ ${new Intl.NumberFormat('pt-BR').format(message.data.amountBRL)} → ${message.data.destinationCurrency}`,
+              action: message.data.txHash ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.open(`https://sepolia.etherscan.io/tx/${message.data.txHash}`, '_blank')}
+                  className="gap-1"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  {t('notifications.view_transaction')}
+                </Button>
+              ) : undefined,
             });
             break;
 
