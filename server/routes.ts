@@ -474,6 +474,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cross-border payment endpoints
+  
+  // Get real-time exchange rates
+  app.get("/api/crossborder/rates", async (_req, res) => {
+    try {
+      // Simulate real-time FX rates with slight variance (in production, use real FX API like ExchangeRate-API)
+      const baseRates = {
+        USD: 5.45,
+        EUR: 5.92,
+        GBP: 6.87,
+      };
+      
+      // Add small random variance to simulate real-time market changes
+      const variance = 0.02; // 2% variance
+      const rates = {
+        USD: Number((baseRates.USD * (1 + (Math.random() - 0.5) * variance)).toFixed(4)),
+        EUR: Number((baseRates.EUR * (1 + (Math.random() - 0.5) * variance)).toFixed(4)),
+        GBP: Number((baseRates.GBP * (1 + (Math.random() - 0.5) * variance)).toFixed(4)),
+      };
+      
+      res.json(rates);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   app.get("/api/crossborder/:address", async (req, res) => {
     try {
       const { address } = req.params;

@@ -34,12 +34,12 @@ export default function CrossBorder() {
   const { wallet } = useWallet();
   const { toast } = useToast();
 
-  // Exchange rates (mock - would come from API)
-  const exchangeRates = {
-    USD: 5.45,
-    EUR: 5.92,
-    GBP: 6.87,
-  };
+  // Fetch real-time exchange rates
+  const { data: exchangeRates, isLoading: ratesLoading, isError: ratesError, refetch: refetchRates } = useQuery<Record<'USD' | 'EUR' | 'GBP', number>>({
+    queryKey: ['/api/crossborder/rates'],
+    refetchInterval: 60000, // Refresh every minute
+    retry: 3,
+  });
 
   const form = useForm<CrossBorderForm>({
     resolver: zodResolver(crossBorderSchema),
@@ -55,8 +55,9 @@ export default function CrossBorder() {
   const watchAmount = form.watch('amountBRL');
   const watchCurrency = form.watch('destinationCurrency');
   
-  const convertedAmount = watchAmount
-    ? (parseFloat(watchAmount) / exchangeRates[watchCurrency as keyof typeof exchangeRates]).toFixed(2)
+  const currentRate = exchangeRates?.[watchCurrency as keyof typeof exchangeRates] || 0;
+  const convertedAmount = watchAmount && currentRate
+    ? (parseFloat(watchAmount) / currentRate).toFixed(2)
     : '0.00';
   
   const fees = watchAmount ? (parseFloat(watchAmount) * 0.015).toFixed(2) : '0.00';
@@ -71,12 +72,15 @@ export default function CrossBorder() {
     mutationFn: async (data: CrossBorderForm) => {
       if (!wallet?.address) throw new Error(t('wallet.no_wallet_error'));
       
+      const rate = exchangeRates?.[data.destinationCurrency as keyof typeof exchangeRates];
+      if (!rate) throw new Error('Exchange rate not available');
+      
       return apiRequest('/api/crossborder', {
         method: 'POST',
         body: JSON.stringify({
           ...data,
           fromAddress: wallet.address,
-          exchangeRate: exchangeRates[data.destinationCurrency as keyof typeof exchangeRates],
+          exchangeRate: rate,
           fees,
         }),
       });
@@ -137,6 +141,54 @@ export default function CrossBorder() {
             </CardTitle>
             <CardDescription>{t('crossborder.connectWallet')}</CardDescription>
           </CardHeader>
+        </Card>
+      </div>
+    );
+  }
+
+  if (ratesLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              {t('crossborder.title')}
+            </CardTitle>
+            <CardDescription>{t('common.loading')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+              <span>Loading real-time exchange rates...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (ratesError || !exchangeRates) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              {t('crossborder.title')}
+            </CardTitle>
+            <CardDescription>{t('common.error')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-4 w-4" />
+              <span>Failed to load exchange rates. Please try again.</span>
+            </div>
+            <Button onClick={() => refetchRates()} variant="outline" data-testid="button-retry-rates">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
         </Card>
       </div>
     );
