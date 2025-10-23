@@ -75,15 +75,14 @@ export default function CrossBorder() {
       const rate = exchangeRates?.[data.destinationCurrency as keyof typeof exchangeRates];
       if (!rate) throw new Error('Exchange rate not available');
       
-      return apiRequest('/api/crossborder', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...data,
-          fromAddress: wallet.address,
-          exchangeRate: rate,
-          fees,
-        }),
+      const response = await apiRequest('POST', '/api/crossborder', {
+        ...data,
+        fromAddress: wallet.address,
+        exchangeRate: rate,
+        fees,
       });
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/crossborder'] });

@@ -2,11 +2,11 @@ import { ethers } from 'ethers';
 import { Alchemy, Network } from 'alchemy-sdk';
 import crypto from 'crypto';
 
-const ENCRYPTION_KEY = process.env.SESSION_SECRET;
+const ENCRYPTION_KEY = process.env.SESSION_SECRET || '';
 const ALGORITHM = 'aes-256-gcm';
 
-if (!ENCRYPTION_KEY) {
-  throw new Error('SESSION_SECRET environment variable is required for secure key encryption');
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
+  throw new Error('SESSION_SECRET environment variable is required for secure key encryption (min 32 characters)');
 }
 
 // Validate and extract Alchemy API key
@@ -106,13 +106,13 @@ export async function getTransactionHistory(address: string) {
   try {
     const history = await alchemy.core.getAssetTransfers({
       fromAddress: address,
-      category: ['external', 'erc20', 'erc721'],
+      category: ['external' as any, 'erc20' as any, 'erc721' as any],
       maxCount: 50,
     });
     
     const received = await alchemy.core.getAssetTransfers({
       toAddress: address,
-      category: ['external', 'erc20', 'erc721'],
+      category: ['external' as any, 'erc20' as any, 'erc721' as any],
       maxCount: 50,
     });
     
@@ -281,13 +281,13 @@ export async function syncTransactionsFromBlockchain(address: string): Promise<a
   try {
     const transfers = await alchemy.core.getAssetTransfers({
       fromAddress: address,
-      category: ['external', 'erc20', 'erc721', 'erc1155'],
+      category: ['external' as any, 'erc20' as any, 'erc721' as any, 'erc1155' as any],
       maxCount: 100,
     });
     
     const received = await alchemy.core.getAssetTransfers({
       toAddress: address,
-      category: ['external', 'erc20', 'erc721', 'erc1155'],
+      category: ['external' as any, 'erc20' as any, 'erc721' as any, 'erc1155' as any],
       maxCount: 100,
     });
     

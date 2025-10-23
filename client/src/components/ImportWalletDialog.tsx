@@ -31,7 +31,7 @@ export function ImportWalletDialog({ open, onOpenChange }: ImportWalletDialogPro
   const importMutation = useMutation({
     mutationFn: async (data: { name: string; privateKey: string }) => {
       const response = await apiRequest('POST', '/api/wallet/import', data);
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       setWallet({

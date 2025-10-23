@@ -86,13 +86,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const address = wallet.address;
 
-      // Check if wallet already exists
+      // Check if wallet already exists - if so, return it instead of error
       const existing = await storage.getWallet(address);
       if (existing) {
-        return res.status(400).json({ error: "Wallet already imported" });
+        // Refresh balances for existing wallet
+        const ethBalance = await getEthBalance(address);
+        const brlxBalance = await getTokenBalance(CONTRACTS.BRLX_TOKEN, address);
+        
+        return res.json({
+          id: existing.id,
+          address: existing.address,
+          name: existing.name,
+          ethBalance,
+          brlxBalance,
+          createdAt: existing.createdAt,
+        });
       }
 
-      // Get balances
+      // Get balances for new wallet
       const ethBalance = await getEthBalance(address);
       const brlxBalance = await getTokenBalance(CONTRACTS.BRLX_TOKEN, address);
       
