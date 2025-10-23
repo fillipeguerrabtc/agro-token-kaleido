@@ -7,9 +7,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { DeviceProvider } from "@/contexts/DeviceContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { WalletButton } from "@/components/WalletButton";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import "./lib/i18n";
 
 import Home from "@/pages/Home";
@@ -48,27 +50,30 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <WalletProvider>
-          <TooltipProvider>
-            <SidebarProvider style={style as React.CSSProperties}>
-              <div className="flex h-screen w-full">
-                <AppSidebar />
-                <div className="flex flex-col flex-1 overflow-hidden">
-                  <header className="flex items-center justify-between px-6 py-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <div className="flex items-center gap-3">
-                      <LanguageSwitcher />
-                      <ThemeToggle />
-                      <WalletButton />
-                    </div>
-                  </header>
-                  <main className="flex-1 overflow-auto">
-                    <Router />
-                  </main>
+          <DeviceProvider>
+            <TooltipProvider>
+              <SidebarProvider style={style as React.CSSProperties}>
+                <div className="flex h-screen w-full">
+                  <AppSidebar />
+                  <div className="flex flex-col flex-1 overflow-hidden">
+                    <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" />
+                      <div className="flex items-center gap-2 md:gap-3">
+                        <LanguageSwitcher />
+                        <ThemeToggle />
+                        <WalletButton />
+                      </div>
+                    </header>
+                    <main className="flex-1 overflow-auto pb-16 md:pb-0">
+                      <Router />
+                    </main>
+                  </div>
                 </div>
-              </div>
-            </SidebarProvider>
-            <Toaster />
-          </TooltipProvider>
+              </SidebarProvider>
+              <MobileBottomNav />
+              <Toaster />
+            </TooltipProvider>
+          </DeviceProvider>
         </WalletProvider>
       </ThemeProvider>
     </QueryClientProvider>
